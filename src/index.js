@@ -1,5 +1,9 @@
 import './css/styles.css';
-// import nameCountry from './fetchCountries';
+import nameCountry from './fetchCountries';
+import nameCountryList from './name-country.hbs';
+import countryCard from './country-card.hbs'
+import Notiflix from 'notiflix';
+
 const DEBOUNCE_DELAY = 300;
 const refs = {
     input: document.querySelector('#search-box'),
@@ -7,26 +11,54 @@ const refs = {
     countryInfo: document.querySelector('.country-info'),
 }
 
-refs.input.addEventListener('input', countrySearch);
+
+const debounce = (fn, ms) => {
+    let timeout;
+    return function () { const fnCall = () => { fn.apply(this, arguments) }
+        clearTimeout(timeout);
+       timeout = setTimeout(fnCall, ms)
+    }
+}
+
 function countrySearch(e){
-    const form = e.currentTarget.value;
+    const form = e.target.value;
 
-    fetchCountry(form).then(country => {
+    nameCountry(form).then(promiseHandling)
+    .catch(promiseError);
+}
+
+countrySearch = debounce(countrySearch,DEBOUNCE_DELAY)
+
+refs.input.addEventListener('input', countrySearch);
+
+
+
+function promiseHandling(country) {
     console.log(country);
-})
-    .catch(error => {
-        console.log(error);
-    });
+    const listCountry = nameCountryList(country)
+    const markup = countryCard(country)
+
+        if (country.length > 10) {
+          Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
+          return;
+        } else if (country.length >= 3 && country.length <= 10) {
+            refs.countryList.innerHTML = listCountry;
+            refs.countryInfo.innerHTML = '';
+          return;
+        } else {
+            refs.countryInfo.innerHTML = markup;
+            refs.countryList.innerHTML = '';
+}
+
+     console.log(markup);
+
 }
 
 
+function promiseError(country) {
+    if (!country.length === country) {
+        Notiflix.Notify.failure('Qui timide rogat docet negare');
+        return;
+    }
 
-console.log(refs.input)
-
-
-
-function fetchCountry(countryId) {
-  return fetch(`https://restcountries.com/v2/${countryId}`)
-    .then(r => { return r.json(); })
 }
-
