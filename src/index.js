@@ -20,10 +20,15 @@ const debounce = (fn, ms) => {
     }
 }
 
-function countrySearch(e){
-    const form = e.target.value;
+function countrySearch(e) {
+    const inputCountry = e.target.value;
+    if (inputCountry.trim() === ' ') {
+    deleteMarkup();
+    return;
+  }
+    deleteMarkup();
 
-    nameCountry(form).then(promiseHandling)
+    nameCountry(inputCountry.trim()).then(promiseHandling)
     .catch(promiseError);
 }
 
@@ -34,31 +39,36 @@ refs.input.addEventListener('input', countrySearch);
 
 
 function promiseHandling(country) {
-    console.log(country);
-    const listCountry = nameCountryList(country)
-    const markup = countryCard(country)
-
         if (country.length > 10) {
           Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
           return;
-        } else if (country.length >= 3 && country.length <= 10) {
-            refs.countryList.innerHTML = listCountry;
-            refs.countryInfo.innerHTML = '';
+        } else if (country.length >= 2 && country.length <= 10) {
+            showCountryList(country)
           return;
-        } else {
-            refs.countryInfo.innerHTML = markup;
-            refs.countryList.innerHTML = '';
+        } else if (country.length === 1) {
+            showCountry(country)
+            return;
 }
-
-     console.log(markup);
-
 }
 
 
-function promiseError(country) {
-    if (!country.length === country) {
-        Notiflix.Notify.failure('Qui timide rogat docet negare');
-        return;
-    }
+function promiseError(error) {
+    Notiflix.Notify.failure("Oops, there is no country with that name");
+}
 
+
+
+function deleteMarkup() {
+  refs.countryList.innerHTML = '';
+  refs.countryInfo.innerHTML = '';
+}
+
+function showCountryList(country) {
+    const listCountry = nameCountryList(country)
+    refs.countryList.innerHTML = listCountry;
+}
+
+function showCountry(country) {
+    const markup = countryCard(country)
+    refs.countryInfo.innerHTML = markup;
 }
